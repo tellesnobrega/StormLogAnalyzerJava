@@ -1,15 +1,10 @@
 package openstack.summit;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import openstack.summit.ReadLogLines;
 import openstack.summit.bolt.AlarmBolt;
 import openstack.summit.bolt.FilterErrorBolt;
-
-import org.apache.kafka.clients.producer.ProducerConfig;
-
 import storm.kafka.Broker;
 import storm.kafka.KafkaSpout;
 import storm.kafka.SpoutConfig;
@@ -18,7 +13,6 @@ import storm.kafka.StringScheme;
 import storm.kafka.trident.GlobalPartitionInformation;
 import backtype.storm.Config;
 import backtype.storm.StormSubmitter;
-import backtype.storm.metric.LoggingMetricsConsumer;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
@@ -72,20 +66,6 @@ public class StormLogAnalyzerTopology {
 
 			StormSubmitter.submitTopologyWithProgressBar(topologyName, config, topologyBuilder.createTopology());
 			
-		    Thread thread = new Thread() {
-		    	public void run() {
-				    Map<String, Object> props = new HashMap<>();
-				    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, hostBroker + ":" + 9092);
-				    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-				    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-				    props.put(ProducerConfig.CLIENT_ID_CONFIG, "log-line");
-				    
-				    new ReadLogLines(filePath).getLine(props, topic);
-		    	}
-		    };
-		    
-		    thread.setDaemon(true);
-			thread.start();
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		} finally {

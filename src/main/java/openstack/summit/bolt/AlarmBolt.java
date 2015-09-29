@@ -46,9 +46,6 @@ public class AlarmBolt extends BaseRichBolt {
 	
 	public void execute(Tuple input) {
 		String timestamp = input.getString(0);
-		LOG.info(">>>>>>>>>>>>>><<<<<<<<<<<<<<<<");
-		LOG.info(timestamp);
-		LOG.info(">>>>>>>>>>>>>><<<<<<<<<<<<<<<<");
 		try {
 			Date newTimestamp = this.convertToDate(timestamp);
 			int errors = getNumErrors(newTimestamp);
