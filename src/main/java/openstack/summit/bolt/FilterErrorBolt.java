@@ -2,6 +2,9 @@ package openstack.summit.bolt;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -13,6 +16,7 @@ import backtype.storm.tuple.Values;
 public class FilterErrorBolt extends BaseRichBolt {
 
 	private static final long serialVersionUID = -3752711690604033901L;
+	private static final Logger LOG = LoggerFactory.getLogger(FilterErrorBolt.class);
 	private OutputCollector collector;
 
 	public FilterErrorBolt() {
@@ -26,8 +30,12 @@ public class FilterErrorBolt extends BaseRichBolt {
 
 	public void execute(Tuple input) {
 		String logLine = input.getString(0);
+		LOG.debug("<<<<<<<<<<>>>>>>>>>>");
+		LOG.debug(logLine);
+		LOG.debug("<<<<<<<<<<>>>>>>>>>>");
 		if (logLine.contains("ERROR")) {
 			String timestamp = getTimestamp(logLine);
+			
 			collector.emit(new Values(timestamp));
 		}
 		collector.ack(input);

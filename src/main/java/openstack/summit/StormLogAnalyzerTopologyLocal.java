@@ -50,7 +50,7 @@ public class StormLogAnalyzerTopologyLocal {
 
 		topologyBuilder.setSpout("spout", new KafkaSpout(spoutConfig), numSpouts);
 		topologyBuilder.setBolt("filterErrorBolt", new FilterErrorBolt(), numBolts).shuffleGrouping("spout");
-		topologyBuilder.setBolt("alarmBolt", new AlarmBolt(), numBolts).shuffleGrouping("filterErrorBolt");
+		topologyBuilder.setBolt("alarmBolt", new AlarmBolt(hostBroker), numBolts).shuffleGrouping("filterErrorBolt");
 		
 
 		Config config = new Config();

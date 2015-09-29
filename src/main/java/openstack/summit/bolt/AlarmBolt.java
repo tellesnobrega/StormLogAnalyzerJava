@@ -12,6 +12,8 @@ import java.util.Map;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -22,12 +24,15 @@ import backtype.storm.tuple.Tuple;
 public class AlarmBolt extends BaseRichBolt {
 
 	private static final long serialVersionUID = -3752711690604033901L;
+	private static final Logger LOG = LoggerFactory.getLogger(AlarmBolt.class);
 	private OutputCollector collector;
 	private Date baseTimestamp;
 	private Date currentTimestamp;
 	private int counter;
+	private String hostBroker;
 
-	public AlarmBolt() {
+	public AlarmBolt(String hostBroker) {
+		this.hostBroker = hostBroker;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -41,12 +46,15 @@ public class AlarmBolt extends BaseRichBolt {
 	
 	public void execute(Tuple input) {
 		String timestamp = input.getString(0);
+		LOG.info(">>>>>>>>>>>>>><<<<<<<<<<<<<<<<");
+		LOG.info(timestamp);
+		LOG.info(">>>>>>>>>>>>>><<<<<<<<<<<<<<<<");
 		try {
 			Date newTimestamp = this.convertToDate(timestamp);
 			int errors = getNumErrors(newTimestamp);
 			if(errors == 3) {
 				Map<String, Object> props = new HashMap<>();
-			    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+			    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, hostBroker + ":9092");
 			    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 			    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 			    props.put(ProducerConfig.CLIENT_ID_CONFIG, "storm-output");
