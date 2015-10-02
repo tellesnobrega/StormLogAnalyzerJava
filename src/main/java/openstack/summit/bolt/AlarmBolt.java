@@ -50,14 +50,11 @@ public class AlarmBolt extends BaseRichBolt {
 			Date newTimestamp = this.convertToDate(timestamp);
 			int errors = getNumErrors(newTimestamp);
 			if(errors == 3) {
-				Map<String, Object> props = new HashMap<>();
-			    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, hostBroker + ":9092");
-			    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-			    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-			    props.put(ProducerConfig.CLIENT_ID_CONFIG, "storm-output");
-			    
+				Map<String, Object> props = getKafkaConfigs();
+			    String message = "There were 3 errors in the last 3 minutes";
+				
 			    try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
-			    	producer.send(new ProducerRecord<String, String>("alarm", "There were 3 errors in the last 3 minutes"));
+			    	producer.send(new ProducerRecord<String, String>("alarm", message));
 			    }
 			}
 			
@@ -67,6 +64,16 @@ public class AlarmBolt extends BaseRichBolt {
 		}
 		
 		collector.ack(input);
+	}
+
+	private Map<String, Object> getKafkaConfigs() {
+		Map<String, Object> props = new HashMap<>();
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, hostBroker + ":9092");
+		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+		props.put(ProducerConfig.CLIENT_ID_CONFIG, "storm-output");
+		
+		return props;
 	}
 	
 	private Date convertToDate(String timestamp) throws ParseException {

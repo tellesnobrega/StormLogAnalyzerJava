@@ -21,15 +21,14 @@ public class StormLogAnalyzerTopology {
 	
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
-		if (args.length != 4) {
-			System.err.println("Please Inform: <topology-name> <host-broker> <topic> <file-path>");
+		if (args.length != 3) {
+			System.err.println("Please Inform: <topology-name> <host-broker> <topic>");
 			System.exit(-1);
 		}
 
 		final String topologyName = args[0];
 		final String hostBroker = args[1];
 		final String topic = args[2];
-		final String filePath = args[3];
 		final int NUM_SPOUTS = 1;
 		final int BROKER_PORT = 9092;
 		
