@@ -3,6 +3,7 @@ package openstack.summit.bolt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -45,14 +46,19 @@ public class AlarmBolt extends BaseRichBolt {
 	}
 	
 	public void execute(Tuple input) {
-		String timestamp = input.getString(0);
+		String component = input.getString(0);
+		String timestamp = input.getString(1);
 		try {
 			Date newTimestamp = this.convertToDate(timestamp);
 			int errors = getNumErrors(newTimestamp);
 			if(errors == 3) {
 				Map<String, Object> props = getKafkaConfigs();
-			    String message = "There were 3 errors in the last 3 minutes";
-				
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+				Date dateobj = new Date();
+				String currentTime = df.format(dateobj);
+			    String message = currentTime + 
+			    				 " - There were 3 errors in the last 3 minutes for component " +
+			    				 component;
 			    try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
 			    	producer.send(new ProducerRecord<String, String>("alarm", message));
 			    }
@@ -65,6 +71,10 @@ public class AlarmBolt extends BaseRichBolt {
 		
 		collector.ack(input);
 	}
+	
+	
+	
+	
 
 	private Map<String, Object> getKafkaConfigs() {
 		Map<String, Object> props = new HashMap<>();

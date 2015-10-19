@@ -21,6 +21,7 @@ import backtype.storm.LocalCluster;
 import backtype.storm.metric.LoggingMetricsConsumer;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
 
 
@@ -49,20 +50,18 @@ public class StormLogAnalyzerTopologyLocal {
 		spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
 
 		topologyBuilder.setSpout("spout", new KafkaSpout(spoutConfig), numSpouts);
-		topologyBuilder.setBolt("filterErrorBolt", new FilterErrorBolt(), numBolts).shuffleGrouping("spout");
-		topologyBuilder.setBolt("alarmBolt", new AlarmBolt(hostBroker), numBolts).shuffleGrouping("filterErrorBolt");
+		topologyBuilder.setBolt("filterErrorBolt", new FilterErrorBolt(), 4).shuffleGrouping("spout");
+		topologyBuilder.setBolt("alarmBolt", new AlarmBolt(hostBroker), 12).fieldsGrouping("filterErrorBolt", new Fields("component"));
 		
 
 		Config config = new Config();
 		config.setNumWorkers(3);
-		config.setDebug(true);
+//		config.setDebug(true);
 		config.put(Config.TOPOLOGY_RECEIVER_BUFFER_SIZE, 8);
 		config.put(Config.TOPOLOGY_TRANSFER_BUFFER_SIZE, 32);
 		config.put(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE, 16384);
 		config.put(Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE, 16384);
 		
-		config.registerMetricsConsumer(LoggingMetricsConsumer.class, 1);
-
 		Thread thread = new Thread() {
 	    	public void run() {
 			    Map<String, Object> props = new HashMap<>();

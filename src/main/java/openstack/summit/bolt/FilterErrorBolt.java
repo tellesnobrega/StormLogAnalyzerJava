@@ -2,9 +2,6 @@ package openstack.summit.bolt;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -31,7 +28,8 @@ public class FilterErrorBolt extends BaseRichBolt {
 		String logLine = input.getString(0);
 		if (logLine.contains("ERROR")) {
 			String timestamp = getTimestamp(logLine);
-			collector.emit(new Values(timestamp));
+			String component = getComponent(logLine);
+			collector.emit(new Values(component, timestamp));
 		}
 		collector.ack(input);
 	}
@@ -41,9 +39,17 @@ public class FilterErrorBolt extends BaseRichBolt {
 		String timestamp = splittedString[0] + " " + splittedString[1];
 		return timestamp;
 	}
+	
+	private String getComponent(String logLine) {
+		String[] splittedString = logLine.split(" ");
+		String componentComplete = splittedString[4];
+		String[] splittedComponent = componentComplete.split("\\.");
+		String component = splittedComponent[0];
+		return component;
+	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-	    declarer.declare(new Fields("alarm"));
+	    declarer.declare(new Fields("component", "alarm"));
 	}
 	
 }
